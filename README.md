@@ -8,7 +8,7 @@ The interface uses a formal program masthead, conventional navigation, tables, a
 
 - `npm run dev` starts the local application.
 - `npx tsc --noEmit` checks TypeScript.
-- `node scripts/test-domain.mjs` runs 16 workflow and business-rule tests.
+- `node scripts/test-domain.mjs` runs the staff and parent workflow tests.
 - `npm run build` builds the Sites application.
 
 ## Prototype boundaries
@@ -34,3 +34,13 @@ The page uses bookmarkable hash routes so a static entry point can expose every 
 Replace the mock service with authenticated API operations and server-authoritative eligibility/access checks. Keep certification and delivery status separate. Wire Windows identity and the staff allow-list using the existing hosting environment. Replace sample PDF content with approved templates and preserve atomic certification behavior; receipt by the broker must never be presented as court acceptance. Eco acceptance/rejection remains disabled until the upstream integration supplies real results.
 
 The browser exposes a feature-detected, read-only `search_cases` WebMCP tool against the same fictional records, enforcing the simulated denied-access state.
+
+## Parent portal
+
+`/parent` opens the parent-facing prototype in the same county-office theme. The parent portal includes sign-in and registration, simulated email activation/password help, preparation completion details, a resumable 20-question knowledge check, class selection/change/cancellation, status and certificate access, and sample requests visible on the staff case page. Preview options switches among fictional parents at different stages. Sample accounts use `sample-pass`; no password is stored. This is not production authentication. The private Sites access policy remains unchanged.
+
+The portal and staff workspace read the same browser-local records. Parent test submissions become staff-visible attempts; enrollment changes update rosters; support requests appear in case details. Old local data is preserved and receives one new sample parent, Alex Morgan. Resetting the sample workspace restores both experiences.
+
+`lib/parent.ts` isolates illustrative parent rules: a 20-question test, an 80% passing score, three submitted attempts, preparation before online testing, and a passing test before self-service enrollment. Payment is shown independently and required for certification. These must be confirmed against the county's actual policies before integration. Staff enrollment overrides and existing certifications remain authoritative. Questions are snapshotted at test start so staff edits cannot alter a test in progress. No language-specific question analytics were added.
+
+Class locations, meeting links, county contact information, and UpToParents instructions must be supplied by the actual program; the prototype does not invent operational contact details. Support requests and activation are simulated. All parent data and checks must move behind authenticated server operations before production use.

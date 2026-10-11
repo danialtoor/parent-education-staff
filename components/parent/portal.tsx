@@ -1,0 +1,48 @@
+'use client';
+import {useEffect,useState} from 'react';
+import {Landmark,Menu,UserRound,ChevronRight,BookOpen,ClipboardCheck,CalendarDays,FileCheck2,LifeBuoy,CheckCircle2,Clock3,ArrowRight,ReceiptText} from 'lucide-react';
+import {useStore,useRoute,navigate} from '@/components/staff/context';
+import {Btn,Modal,Field,PageHeading,Panel,Notice,Badge,Definition} from '@/components/staff/ui';
+import {type CaseRecord,TODAY,date,time,payment} from '@/lib/domain';
+import {STARTER_PARENT,parentNextStep,currentClass} from '@/lib/parent';
+import {ParentAccess,Preparation,ParentHelp,ParentCertificate} from './program';
+import ParentTesting from './testing';
+import ParentClasses from './classes';
+
+const NAV=[['/','My program'],['/preparation','Preparation'],['/testing','Test'],['/classes','My class'],['/certificate','Certificate'],['/help','Help']];
+const SESSION='county-parent-session-v1';
+export default function ParentPortal(){
+  const {data,ready}=useStore();const {path,params}=useRoute();
+  const [personId,setPersonId]=useState<string|null>(STARTER_PARENT);const [loaded,setLoaded]=useState(false);
+  const [mobile,setMobile]=useState(false);const [account,setAccount]=useState(false);const [demo,setDemo]=useState(false);
+  useEffect(()=>{try{const stored=sessionStorage.getItem(SESSION);if(stored!==null)setPersonId(stored||null)}catch{}setLoaded(true)},[]);
+  const person=data.cases.find(c=>c.id===personId);
+  const signedIn=!!person&&person.active&&!!person.registered&&person.activated;
+  const label=NAV.find(n=>n[0]===path)?.[1]||'Your account';
+  useEffect(()=>{setMobile(false);window.scrollTo({top:0});document.querySelector<HTMLElement>('h1')?.focus();document.title=label+' | Parent Education'},[path,label,personId]);
+  function signIn(id:string|null){setPersonId(id);try{sessionStorage.setItem(SESSION,id||'')}catch{}setAccount(false);navigate(id?'/':'/sign-in')}
+  return <div className="county-app parent-app">
+    <a href="#parent-main" className="skip-link" onClick={e=>{e.preventDefault();document.getElementById('parent-main')?.focus()}}>Skip to main content</a>
+    <header className="county-header"><div className="county-masthead"><a className="county-brand" href="#/"><Landmark size={35} strokeWidth={1.4} aria-hidden="true"/><div><strong>Parent Education Program</strong><span>Parent portal</span></div></a>{signedIn?<button className="account-button" onClick={()=>setAccount(true)} aria-label={`Your account: ${person.name}`}><UserRound size={20}/><span>{person.name}<small>Your account</small></span></button>:<a className="parent-header-help" href="#/help">Help signing in</a>}</div>
+      {signedIn&&<div className="county-nav-wrap"><button className="mobile-menu" aria-expanded={mobile} onClick={()=>setMobile(!mobile)}><Menu size={20}/>Menu</button><nav className={'county-nav '+(mobile?'expanded':'')} aria-label="Parent navigation">{NAV.map(([href,title])=><a href={'#'+href} key={href} className={href===path?'active':''} aria-current={href===path?'page':undefined}>{title}</a>)}</nav><span className="staff-only">PARENT PORTAL</span></div>}
+    </header>
+    <div className="county-breadcrumb"><span>Parent education</span><ChevronRight size={13}/><span>{signedIn?label:'Your account'}</span><span className="sample-tag">Sample records · {date(TODAY)}</span></div>
+    <main id="parent-main" className="main parent-main" tabIndex={-1}>
+      {!ready||!loaded?<div className="empty" role="status">Loading your program…</div>:!signedIn?<ParentAccess person={person} path={path} onSignIn={signIn}/>:path==='/'?<ParentHome person={person}/>:path==='/preparation'?<Preparation key={person.id} person={person}/>:path==='/testing'?<ParentTesting key={person.id} person={person}/>:path==='/classes'?<ParentClasses key={person.id} person={person}/>:path==='/certificate'?<ParentCertificate person={person}/>:path==='/help'?<ParentHelp key={person.id} person={person} topic={params.get('topic')||''}/>:<ParentHome person={person}/>}
+      <footer className="page-footer parent-footer"><div><strong>Parent Education Program</strong><span>Questions about your case? Use the contact information on your court notice.</span></div><div><span>Interactive prototype · Fictional records only</span><button className="text-link" onClick={()=>setDemo(true)}>Preview options</button></div></footer>
+    </main>
+    {account&&person&&<Modal title="Your account" description="Your account is linked to this parent education case." onClose={()=>setAccount(false)}><Definition items={[["Name",person.name],["Case number",person.number],["Email",person.email]]}/><p className="muted">For changes to your name or case number, contact the program office.</p><div className="form-actions"><Btn onClick={()=>setAccount(false)}>Close</Btn><Btn onClick={()=>signIn(null)}>Sign out</Btn></div></Modal>}
+    {demo&&<Modal title="Parent preview options" description="Explore fictional parents at different stages. These controls are only for reviewing the prototype." onClose={()=>setDemo(false)}><Field label="Sample parent"><select value={personId||''} onChange={e=>{signIn(e.target.value||null);setDemo(false)}}><option value="">Signed out / registration</option>{[[STARTER_PARENT,'Alex Morgan — getting started'],['c18','Luis Mendoza — class registered'],['c1','Maria Hernandez — payment needed'],['c5','Sarah Mitchell — certified'],['c12','Carlos Rivera — attempts used'],['c24','Marcus Robinson — activation needed'],['c27','Isabel Cruz — inactive account']].map(([id,title])=><option key={id} value={id}>{title}</option>)}</select></Field><Notice>Sign-in, activation, support requests, and test policies are simulated. Sample accounts use the password <strong>sample-pass</strong>. No real emails or payments are sent.</Notice><a className="btn" href="/">Open staff workspace</a><div className="form-actions"><Btn onClick={()=>setDemo(false)}>Close</Btn></div></Modal>}
+  </div>;
+}
+
+function ParentHome({person:c}:{person:CaseRecord}){
+  const {data}=useStore();const next=parentNextStep(data,c);const upcoming=currentClass(data,c.id);const cl=data.classes.find(cl=>cl.id===upcoming?.classId);
+  const certified=data.enrollments.some(e=>e.caseId===c.id&&e.certified);const attended=data.enrollments.some(e=>e.caseId===c.id&&e.attendance==='Attended');const passed=c.attempts.some(a=>a.passed);
+  const Icon=next.icon==='book'?BookOpen:next.icon==='test'?ClipboardCheck:next.icon==='class'?CalendarDays:next.icon==='help'?LifeBuoy:FileCheck2;
+  const items=[{title:'Preparation activities',text:c.upCode?'Your completion details are on file.':'Complete your activities and enter your completion code.',done:!!c.upCode,status:c.upCode?'Complete':'To do',href:'/preparation',icon:BookOpen},{title:'Knowledge check',text:passed?'Your passing result is on file.':c.optOut?'In-person testing requested.':c.exhausted?'Contact the program office for help with testing.':'20 true-or-false questions about what you learned.',done:passed,status:passed?'Passed':c.optOut||c.exhausted?'Help needed':'To do',href:'/testing',icon:ClipboardCheck},{title:'Parent education class',text:attended?'Your attendance has been recorded.':cl?`${date(cl.date)} · ${time(cl.start)} · ${cl.format}`:'Choose a class, then attend the full session.',done:attended,status:attended?'Attended':cl?'Registered':'To do',href:'/classes',icon:CalendarDays},{title:'Certificate of completion',text:certified?'Your certificate is ready to download.':'Available after the program office reviews your completion.',done:certified,status:certified?'Available':'Not yet available',href:'/certificate',icon:FileCheck2}];
+  return <><PageHeading title={`Welcome, ${c.name.split(' ')[0]}.`} description="Your program information and next step, all in one place."/><div className="parent-columns"><div>
+    <section className="parent-next" aria-labelledby="next-title"><div className="parent-section-label"><Icon size={23} aria-hidden="true"/>YOUR NEXT STEP</div><h2 id="next-title">{next.title}</h2><p>{next.text}</p><a className="btn primary" href={'#'+next.href}>{next.action}<ArrowRight size={18}/></a></section>
+    <section className="panel parent-progress" aria-labelledby="progress-title"><div className="panel-heading"><h2 id="progress-title">Your program at a glance</h2></div><ul>{items.map(({title,text,done,status,href,icon:I})=><li key={title}><div className={'parent-progress-icon '+(done?'is-done':'')}>{done?<CheckCircle2 size={23} aria-hidden="true"/>:<I size={23} aria-hidden="true"/>}</div><div className="grow"><a href={'#'+href}>{title}</a><p>{text}</p></div><Badge tone={done?'green':status==='Help needed'?'amber':'neutral'}>{status}</Badge></li>)}</ul></section>
+  </div><aside className="parent-aside"><Panel title="Your case"><Definition items={[["Parent",c.name],["Case number",<span className="number">{c.number}</span>],["Payment",c.waived?'Fee waived':c.paid?'Recorded':'Not yet recorded']]}/><div className="parent-aside-note"><ReceiptText size={18} aria-hidden="true"/><p>{c.paid||c.waived?'Your payment requirement is complete.':'Payment is handled by the program office. A payment or fee waiver must be recorded before a certificate can be issued.'}</p></div></Panel><section className="parent-help-note"><LifeBuoy size={25} aria-hidden="true"/><h2>We can help you get started</h2><p>Need help with your account, testing, or attending a class? Tell the program office what you need.</p><a className="text-link" href="#/help">Get help with the program <ArrowRight size={15}/></a></section><div className="parent-reassurance"><Clock3 size={18} aria-hidden="true"/><p>You can come back to your program. Completed work and saved test answers stay on your record.</p></div></aside></div></>;
+}

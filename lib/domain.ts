@@ -6,7 +6,9 @@ export interface ClassRecord { id:string; date:string; start:string; end:string;
 export interface Enrollment { id:string; caseId:string; classId:string; signup:string; attendance:Attendance; certified:string|null; emailed:string|null }
 export interface Question { id:string; en:string; es:string; answer:boolean; visible:boolean; responses:number; wrong:number }
 export interface Delivery { id:string; enrollmentId:string; certified:string; status:'Failed'|'Sent'|'Dismissed'; attempts:number; reason:string; updated:string }
-export interface Data { cases:CaseRecord[]; classes:ClassRecord[]; enrollments:Enrollment[]; questions:Question[]; deliveries:Delivery[] }
+export interface ParentTest { id:string; caseId:string; language:'English'|'Spanish'; started:string; completed:string|null; questions:Question[]; answers:Record<string,boolean>; score:number|null }
+export interface ParentRequest { id:string; caseId:string; topic:string; message:string; created:string }
+export interface Data { cases:CaseRecord[]; classes:ClassRecord[]; enrollments:Enrollment[]; questions:Question[]; deliveries:Delivery[]; parentTests?:ParentTest[]; parentRequests?:ParentRequest[] }
 export const uid = () => typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : String(Date.now())+Math.random();
 export function day(offset:number,from=TODAY){ const d=new Date(from+'T12:00:00'); d.setDate(d.getDate()+offset); return d.toISOString().slice(0,10) }
 export function date(v:string|null,options?:Intl.DateTimeFormatOptions){return v?new Date(v.slice(0,10)+'T12:00:00').toLocaleDateString('en-US',options??{month:'short',day:'numeric',year:'numeric'}):'Not yet'}
