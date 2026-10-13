@@ -1,4 +1,5 @@
-import {type Data,type CaseRecord,type ParentTest,TODAY,uid,formatCase,roster} from './domain';
+import {type Data,type CaseRecord,type DemoCredential,TODAY,uid,roster} from './domain';
+import {findRegistrationCases} from './parent-auth';
 
 // Illustrative rules only. Replace with county policy and server-authoritative checks.
 export const PARENT_RULES = {questionCount:20,passScore:80,maxAttempts:3};
@@ -26,7 +27,7 @@ export function parentNextStep(data:Data,c:CaseRecord){
   return {title:'Begin with your preparation activities',text:'Complete the UpToParents activities provided by your court, then add your completion details here.',action:'Review preparation instructions',href:'/preparation',icon:'book'};
 }
 export type ParentAction =
-  | {type:'parent.register';number:string;name:string;email:string}
+  | {type:'parent.register';caseId:string;number:string;lastName:string;email:string;credential:DemoCredential}
   | {type:'parent.activate';caseId:string}
   | {type:'parent.preparation';caseId:string;code:string;name:string;date:string}
   | {type:'parent.test.start';caseId:string;language:'English'|'Spanish'}
@@ -38,12 +39,13 @@ export type ParentAction =
 export function applyParent(data:Data,action:ParentAction):Data {
   const d=structuredClone(data);
   if(action.type==='parent.register'){
-    const c=d.cases.find(c=>c.number===formatCase(action.number)&&c.name.toLowerCase()===action.name.trim().toLowerCase());
+    const c=findRegistrationCases(d,action.number,action.lastName).find(c=>c.id===action.caseId);
     if(!c||!c.active)throw Error('We could not match an active case. Check the name and case number, or contact the program office.');
     if(c.registered)throw Error('This case already has an account. Use sign in or password help.');
     const email=action.email.trim().toLowerCase();
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||d.cases.some(x=>x.id!==c.id&&x.registered&&x.email.toLowerCase()===email))throw Error('Enter an email address that is not already registered.');
-    Object.assign(c,{email,registered:TODAY,activated:false});return d;
+    if(!/^[a-f0-9]{32}$/.test(action.credential?.salt||'')||!/^[a-f0-9]{64}$/.test(action.credential?.digest||''))throw Error('Your account password could not be saved. Please try again.');
+    Object.assign(c,{email,registered:TODAY,activated:false,demoCredential:action.credential});return d;
   }
   const c=parentRecord(d,action.caseId);
   if(!c||!c.active||!c.registered)throw Error('An active, registered parent account is required.');

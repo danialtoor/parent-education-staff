@@ -1,6 +1,7 @@
 export const TODAY = '2026-10-08';
 export type Attendance = 'Unmarked' | 'Attended' | 'Not attended';
-export interface CaseRecord { id:string; number:string; name:string; active:boolean; paid:boolean; waived:boolean; email:string; registered:string|null; activated:boolean; optOut:boolean; upCode:string; upName:string; upDate:string|null; exhausted:boolean; waitingSince:string; attempts:Attempt[] }
+export interface DemoCredential { salt:string; digest:string }
+export interface CaseRecord { id:string; number:string; name:string; lastName?:string; demoCredential?:DemoCredential; active:boolean; paid:boolean; waived:boolean; email:string; registered:string|null; activated:boolean; optOut:boolean; upCode:string; upName:string; upDate:string|null; exhausted:boolean; waitingSince:string; attempts:Attempt[] }
 export interface Attempt { id:string; start:string; end:string; score:number; passed:boolean }
 export interface ClassRecord { id:string; date:string; start:string; end:string; language:string; format:string; capacity:number; active:boolean }
 export interface Enrollment { id:string; caseId:string; classId:string; signup:string; attendance:Attendance; certified:string|null; emailed:string|null }
@@ -42,7 +43,7 @@ export function apply(data:Data,action:Action):Data{
  case 'case.save':{if(!action.record.name.trim()||!action.record.number.trim())throw Error('Enter a name and case number.');if(d.cases.some(c=>c.id!==action.record.id&&c.number===action.record.number))throw Error('This case number already exists.');const i=d.cases.findIndex(c=>c.id===action.record.id);if(i<0)d.cases.push(action.record);else d.cases[i]=action.record;break}
  case 'case.payment':Object.assign(needCase(action.id),{paid:action.paid,waived:action.waived});break;
  case 'case.active':{const c=needCase(action.id);c.active=!c.active;break}
- case 'case.detach':Object.assign(needCase(action.id),{email:'',registered:null,activated:false});break;
+ case 'case.detach':Object.assign(needCase(action.id),{email:'',registered:null,activated:false,demoCredential:undefined});break;
  case 'class.save':if(action.records.length>26)throw Error('A repeating series cannot exceed 26 weeks.');for(const c of action.records){if(!c.date||c.end<=c.start||!Number.isInteger(c.capacity)||c.capacity<1)throw Error('Check the date, times, and class size.');const i=d.classes.findIndex(x=>x.id===c.id);if(i<0)d.classes.push(c);else d.classes[i]=c}break;
  case 'class.active':{const c=d.classes.find(x=>x.id===action.id);if(!c)throw Error('Class not found.');c.active=!c.active;break}
  case 'enroll':{needCase(action.caseId);if(!d.classes.some(x=>x.id===action.classId&&x.active))throw Error('Choose an active class.');if(d.enrollments.some(e=>e.caseId===action.caseId&&e.classId===action.classId))throw Error('This case is already enrolled in that class.');d.enrollments.push({id:uid(),caseId:action.caseId,classId:action.classId,signup:now,attendance:'Unmarked',certified:null,emailed:null});break}
