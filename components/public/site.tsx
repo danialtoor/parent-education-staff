@@ -1,10 +1,11 @@
 'use client';
 import {useEffect,useState} from 'react';
-import {Landmark,Menu,ArrowRight,BookOpen,ClipboardCheck,CalendarDays,Mail,Phone,MapPin,ChevronRight,ExternalLink,Check,Search} from 'lucide-react';
+import {Landmark,Menu,ArrowRight,BookOpen,Mail,Phone,MapPin,ChevronRight,ExternalLink,Check,Search} from 'lucide-react';
 import {useStore,useRoute} from '@/components/staff/context';
 import {Btn,PageHeading} from '@/components/staff/ui';
 import {PARENT_SESSION} from '@/lib/parent-auth';
 import {AccountAccess} from './access';
+import {ProgramJourney} from './program-journey';
 
 const EMAIL='kids1st@co.kane.il.us';
 const SOURCES={home:'https://www.kids1stkanecounty.com/public/Default.aspx',faq:'https://www.kids1stkanecounty.com/public/FAQ.aspx',contact:'https://www.kids1stkanecounty.com/public/Contact.aspx',register:'https://www.kids1stkanecounty.com/public/Register.aspx'};
@@ -24,7 +25,7 @@ export default function PublicSite(){
 
 function Landing(){return <>
   <section className="public-introduction"><div className="public-intro-copy"><p className="public-overline">PARENT EDUCATION · KANE COUNTY, ILLINOIS</p><h1 tabIndex={-1}>Helping parents<br/>put children first.</h1><p className="public-lead">A clear place to begin your KiDs1st program—and return to each next step.</p><p>KiDs1st is Kane County Circuit Court’s parent education program for parents and custodians assigned to attend in family cases.</p><a className="public-inline-link" href="#/faq">Learn about the program <ArrowRight size={17}/></a></div><section className="public-get-started" aria-labelledby="get-started-title"><div className="public-start-heading"><BookOpen size={24} aria-hidden="true"/><h2 id="get-started-title">Start or continue your program</h2></div><div className="public-start-body"><h3>Here for the first time?</h3><p>Have your <strong>case number</strong> and <strong>last name</strong> ready. You’ll find your case before creating an account.</p><a className="btn primary" href="#/register">Register for an account<ArrowRight size={17}/></a><div className="public-returning"><h3>Already registered?</h3><p>Use your email and password to continue.</p><a className="text-link" href="#/sign-in">Sign in to your program <ArrowRight size={16}/></a></div></div></section></section>
-  <section className="public-program" aria-labelledby="program-overview"><div className="public-section-heading"><div><p className="public-overline">WHAT TO EXPECT</p><h2 id="program-overview">Your path through the program</h2></div><p>Complete the online work, then attend your scheduled class.</p></div><ol className="public-program-steps"><li><div className="public-step-heading"><span>1</span><BookOpen size={25}/></div><h3>Get ready and register</h3><p>Email your case number to the program office. Find your case, create your account, and activate it using the email link.</p><a href="#/register" className="text-link">Begin registration <ArrowRight size={15}/></a></li><li><div className="public-step-heading"><span>2</span><ClipboardCheck size={25}/></div><h3>Complete your online work</h3><p>Finish the UpToParents activities. Keep your completion code, then return to KiDs1st to take the knowledge check.</p><a href="https://www.uptoparents.org/" target="_blank" rel="noreferrer" className="text-link">About UpToParents <ExternalLink size={14}/></a></li><li><div className="public-step-heading"><span>3</span><CalendarDays size={25}/></div><h3>Choose and attend a class</h3><p>After passing the test, register for an available class. Parents in the same case attend separate sessions.</p><a href="#/faq" className="text-link">Read class information <ArrowRight size={15}/></a></li></ol></section>
+  <div className="public-program"><ProgramJourney/></div>
   <section className="public-help-band"><div><h2>A question shouldn’t keep you from getting started.</h2><p>Find answers about registration, class attendance, payment, and completion.</p></div><a href="#/faq" className="btn">Read frequently asked questions<ArrowRight size={17}/></a></section>
   <section className="public-office-line"><div><Mail size={23}/><p><strong>Need help finding your case?</strong><br/>Contact the KiDs1st program office with your case number.</p></div><a href="#/contact" className="text-link">Contact us <ArrowRight size={16}/></a></section>
 </>}
