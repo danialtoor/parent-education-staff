@@ -43,3 +43,17 @@
 @media(max-width:680px){.public-app .county-masthead{padding-left:18px;padding-right:18px}}
 .public-app .county-breadcrumb{width:100%;max-width:1320px;flex-shrink:0}.public-app .text-link,.public-auth-layout .text-link{display:inline-flex;align-items:center}.public-app .county-nav-wrap{padding-left:19px;padding-right:19px}.public-app .county-nav{gap:4px}
 @media(max-width:680px){.public-app .county-nav-wrap{padding:0}}
+
+/* Keep the overview prominent, with optional help alongside it. */
+.public-journey-layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:28px;align-items:start;border-top:1px solid #c7d1d9;padding-top:32px}
+.public-journey-layout .public-program{min-width:0;border:0;padding:0}
+.public-journey-help{display:grid;gap:24px;min-width:0}
+.public-journey-help .public-help-band{display:flex;flex-direction:column;align-items:stretch;gap:22px;margin:0;padding:28px 26px}
+.public-journey-help .public-help-band h2{font-size:25px;line-height:1.4;margin-bottom:14px}
+.public-journey-help .public-help-band>.btn{width:100%;max-width:none;white-space:normal;justify-content:space-between;text-align:left;min-height:44px}
+.public-journey-help .public-office-line{display:flex;flex-direction:column;align-items:start;gap:17px;padding:26px;background:#fff;border:1px solid #cad4dc}
+.public-journey-help .public-office-line>div{display:block;padding:0}
+.public-journey-help .public-office-line h2{font:23px/1.4 Georgia,serif;color:#354f62;margin-bottom:10px}
+.public-journey-help .public-office-line>a{margin:0;min-height:44px}
+@media(max-width:960px){.public-journey-layout{grid-template-columns:1fr;gap:28px}}
+@media(max-width:520px){.public-journey-layout{padding-top:26px;gap:24px}.public-journey-help{gap:20px}.public-journey-help .public-help-band,.public-journey-help .public-office-line{padding:23px 20px}.public-journey-help .public-help-band h2{font-size:23px}}
