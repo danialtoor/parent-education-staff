@@ -1,11 +1,11 @@
 'use client';
 
-import {useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import type {CSSProperties, ReactNode} from 'react';
 import {
   CalendarCheck, Check, CornerDownLeft, ExternalLink, Landmark, LockKeyhole,
   LockKeyholeOpen, Mail, MessagesSquare, Monitor, Pause, PencilLine, Play,
-  Pointer, ReceiptText, RotateCcw, Scale, ChevronLeft, ChevronRight,
+  Pointer, ReceiptText, RotateCcw, Scale, ListVideo, Maximize, Minimize, X,
 } from 'lucide-react';
 
 import {STEPS, TOTAL, locate, stepsFor, stepStart, translate, type JourneyLanguage} from '@/lib/journey-content';
@@ -107,33 +107,83 @@ function JourneyScene({index, local, reduced, language}:{index:number; local:num
   }
 }
 
+const clockTime=(seconds:number)=>`${Math.floor(seconds/60)}:${Math.floor(seconds%60).toString().padStart(2,'0')}`;
+
 export function ProgramJourney() {
   const player=useJourneyPlayback();
-  const [transcriptOpen,setTranscriptOpen]=useState(false);
-  const {elapsed,playing,language,reduced,stageRef}=player;
-  const {index,local}=locate(elapsed),steps=stepsFor(language);
+  const [transcriptOpen,setTranscriptOpen]=useState(false),[chaptersOpen,setChaptersOpen]=useState(false);
+  const [fullscreen,setFullscreen]=useState(false),[expanded,setExpanded]=useState(false);
+  const frameRef=useRef<HTMLDivElement>(null),chapterRef=useRef<HTMLDivElement>(null),chapterButtonRef=useRef<HTMLButtonElement>(null);
+  const resumeAfterScrub=useRef(false);
+  const {elapsed,playing,hasStarted,language,reduced}=player;
+  const {index,local}=locate(elapsed),steps=stepsFor(language),ended=elapsed>=TOTAL;
   const t=(text:string)=>translate(language,text);
+  const isFullscreen=fullscreen||expanded;
+
+  useEffect(()=>{
+    const changed=()=>setFullscreen(document.fullscreenElement===frameRef.current);
+    document.addEventListener('fullscreenchange',changed);
+    return ()=>document.removeEventListener('fullscreenchange',changed);
+  },[]);
+  useEffect(()=>{
+    if(!expanded)return;
+    const previous=document.body.style.overflow,previousFocus=document.activeElement as HTMLElement|null;document.body.style.overflow='hidden';
+    const controls=()=>Array.from(frameRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled)')??[]).filter(element=>element.getClientRects().length);
+    frameRef.current?.querySelector<HTMLElement>('.fullscreen-button')?.focus();
+    const escape=(event:KeyboardEvent)=>{
+      if(event.key==='Escape'){setExpanded(false);return;}
+      if(event.key==='Tab'){const items=controls(),first=items[0],last=items.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}}
+    };
+    document.addEventListener('keydown',escape);
+    return ()=>{document.body.style.overflow=previous;document.removeEventListener('keydown',escape);previousFocus?.focus();};
+  },[expanded]);
+  useEffect(()=>{
+    if(!chaptersOpen)return;
+    chapterRef.current?.querySelector<HTMLElement>('[aria-current=step]')?.focus();
+    const outside=(event:PointerEvent)=>{if(!chapterRef.current?.contains(event.target as Node)&&!chapterButtonRef.current?.contains(event.target as Node))setChaptersOpen(false);};
+    const escape=(event:KeyboardEvent)=>{if(event.key==='Escape'){setChaptersOpen(false);chapterButtonRef.current?.focus();}};
+    document.addEventListener('pointerdown',outside);document.addEventListener('keydown',escape);
+    return ()=>{document.removeEventListener('pointerdown',outside);document.removeEventListener('keydown',escape);};
+  },[chaptersOpen]);
+  async function toggleFullscreen(){
+    if(expanded){setExpanded(false);return;}
+    if(document.fullscreenElement===frameRef.current){await document.exitFullscreen();return;}
+    try{if(!frameRef.current?.requestFullscreen)throw new Error('unsupported');await frameRef.current.requestFullscreen();}
+    catch{setExpanded(true);}
+  }
+  function chooseChapter(chapter:number){player.seek(stepStart(chapter));player.start();setChaptersOpen(false);chapterButtonRef.current?.focus();}
+  function playOrPause(){setChaptersOpen(false);player.togglePlay();}
+
   return <section id="program-objects" lang={language} aria-labelledby="program-overview" data-playing={playing}>
-    <div className="film">
-      <header className="intro"><div className="intro-topline"><p className="eyebrow">{t('What to expect')}</p><label className="language-choice"><span>{t('Language')}</span><select aria-label="Overview language / Idioma del recorrido" value={language} onChange={e=>player.setLanguage(e.target.value as JourneyLanguage)}><option value="en">English</option><option value="es">Español</option></select></label></div><h2 id="program-overview">{t('Your path through the program')}</h2><p>{t('Once you register, we’ll guide you through each step.')}</p></header>
-      <div className="stage" aria-hidden="true" ref={stageRef}><div className="scene active" data-scene={index}><JourneyScene index={index} local={local} reduced={reduced} language={language}/></div></div>
-      <div className="caption">
-        {steps.map((item,i)=><div className={`caption-panel${i===index?' active':''}`} aria-hidden={i!==index} key={i}>
-          <div className="counter">{i+1} {t('of')} {STEPS.length} · {item.label}</div><h3>{item.title}</h3><p>{item.copy}</p>
-        </div>)}
+    <header className="intro"><div className="intro-topline"><p className="eyebrow">{t('What to expect')}</p><label className="language-choice"><span>{t('Language')}</span><select aria-label="Overview language / Idioma del recorrido" value={language} onChange={e=>player.setLanguage(e.target.value as JourneyLanguage)}><option value="en">English</option><option value="es">Español</option></select></label></div><h2 id="program-overview">{t('Your path through the program')}</h2><p>{t('Once you register, we’ll guide you through each step.')}</p></header>
+    <div className={`video-player${expanded?' is-expanded':''}`} ref={frameRef} role={expanded?'dialog':undefined} aria-modal={expanded?true:undefined} aria-label={expanded?t('Program overview'):undefined}>
+      <div className="video-screen">
+        <div className="video-visual">
+          <div className={`stage${!hasStarted?' is-poster':''}`} aria-hidden="true"><div className="scene active" data-scene={hasStarted?index:1}><JourneyScene index={hasStarted?index:1} local={hasStarted?local:1} reduced={reduced||!playing} language={language}/></div></div>
+          <button className={`screen-toggle${!hasStarted||ended?' is-visible':''}${!hasStarted?' is-poster':''}`} type="button" aria-label={t(!hasStarted?'Watch overview':ended?'Watch again':playing?'Pause':'Play')} onClick={playOrPause}>
+            <span className="center-play">{ended?<RotateCcw aria-hidden="true"/>:playing?<Pause aria-hidden="true"/>:<Play aria-hidden="true"/>}</span>
+            {!hasStarted&&<span className="poster-label">{t('Watch the overview')}<small>{t('1 minute · 9 steps')}</small></span>}
+          </button>
+        </div>
+        <div className="caption">
+          {!hasStarted?<div><div className="counter">KiDs1st · {t('Program overview')}</div><h3>{t('Your program, step by step')}</h3><p>{t('See what to expect, from registration to program completion.')}</p></div>:steps.map((item,i)=><div className={`caption-panel${i===index?' active':''}`} aria-hidden={i!==index} key={i}><div className="counter">{i+1} {t('of')} {STEPS.length} · {item.label}</div><h3>{item.title}</h3><p>{item.copy}</p></div>)}
+        </div>
       </div>
-      <div className="media" role="group" aria-label={language==='es'?'Controles de reproducción':'Animation playback'}>
-        <button className="play" type="button" aria-label={t(playing?'Pause':'Play')} onClick={player.togglePlay}>{playing?<Pause aria-hidden="true"/>:<Play aria-hidden="true"/>}{t(playing?'Pause':'Play')}</button>
-        <div className="seek-wrap"><label className="sr" htmlFor="po-seek">{language==='es'?'Posición del recorrido':'Tour position'}</label><input id="po-seek" type="range" min={0} max={TOTAL} step={.1} value={elapsed} aria-valuetext={`${index+1} ${t('of')} ${STEPS.length}: ${steps[index].title}`} onPointerDown={player.pause} onKeyDown={player.pause} onChange={event=>player.seek(Number(event.currentTarget.value))}/></div>
-        <button className="replay" type="button" onClick={()=>player.start(true)}><RotateCcw aria-hidden="true"/>{t('Replay')}</button>
+      <div className="video-controls" role="group" aria-label={t('Video controls')}>
+        <div className="video-timeline">
+          <div className="chapter-track" aria-hidden="true">{STEPS.map((step,i)=><span className="chapter-segment" key={i} style={{flex:step.duration}}><span style={{width:`${Math.max(0,Math.min(1,(elapsed-stepStart(i))/step.duration))*100}%`}}/></span>)}</div>
+          <label className="sr" htmlFor="po-seek">{t('Tour position')}</label><input id="po-seek" type="range" min={0} max={TOTAL} step={.1} value={elapsed} aria-valuetext={`${clockTime(elapsed)} / ${clockTime(TOTAL)} · ${index+1} ${t('of')} ${STEPS.length}: ${steps[index].title}`} onPointerDown={event=>{resumeAfterScrub.current=playing;player.pause();event.currentTarget.setPointerCapture(event.pointerId);}} onPointerUp={()=>{if(resumeAfterScrub.current)player.start();resumeAfterScrub.current=false;}} onPointerCancel={()=>{resumeAfterScrub.current=false;}} onKeyDown={player.pause} onChange={event=>player.seek(Number(event.currentTarget.value))}/>
+        </div>
+        <div className="video-toolbar">
+          <button className="video-icon-button" type="button" aria-label={t(ended?'Replay':playing?'Pause':'Play')} title={t(ended?'Replay':playing?'Pause':'Play')} onClick={playOrPause}>{ended?<RotateCcw aria-hidden="true"/>:playing?<Pause aria-hidden="true"/>:<Play aria-hidden="true"/>}</button>
+          <span className="video-time" aria-hidden="true">{clockTime(elapsed)} <span>/ {clockTime(TOTAL)}</span></span>
+          <button className="chapter-trigger" type="button" ref={chapterButtonRef} aria-label={t('Chapters')} aria-expanded={chaptersOpen} aria-controls="journey-chapters" onClick={()=>{if(!chaptersOpen)player.pause();setChaptersOpen(!chaptersOpen);}}><ListVideo aria-hidden="true"/><span>{t('Chapters')}</span><span className="chapter-count">{index+1}/{STEPS.length}</span></button>
+          <button className="video-icon-button fullscreen-button" type="button" aria-label={t(isFullscreen?'Exit full screen':'Full screen')} title={t(isFullscreen?'Exit full screen':'Full screen')} onClick={toggleFullscreen}>{isFullscreen?<Minimize aria-hidden="true"/>:<Maximize aria-hidden="true"/>}</button>
+        </div>
+        {chaptersOpen&&<div className="chapter-menu" ref={chapterRef} id="journey-chapters" role="region" aria-label={t('Video chapters')}><div className="chapter-menu-heading"><strong>{t('Jump to a step')}</strong><button type="button" aria-label={t('Close chapters')} onClick={()=>{setChaptersOpen(false);chapterButtonRef.current?.focus();}}><X aria-hidden="true"/></button></div><ol>{steps.map((step,i)=><li key={step.title}><button type="button" aria-current={i===index?'step':undefined} onClick={()=>chooseChapter(i)}><span className="chapter-number">{i+1}</span><span>{step.title}</span><time>{clockTime(stepStart(i))}</time></button></li>)}</ol></div>}
       </div>
-      <div className="step-navigation"><button type="button" disabled={index===0} onClick={()=>player.seek(stepStart(index-1))}><ChevronLeft aria-hidden="true"/>{t('Previous step')}</button><span aria-hidden="true">{index+1} / {STEPS.length}</span><button type="button" disabled={index===STEPS.length-1} onClick={()=>player.seek(stepStart(index+1))}>{t('Next step')}<ChevronRight aria-hidden="true"/></button></div>
-      <span className="sr" role="status">{elapsed>=TOTAL?t('Tour finished'):''}</span>
-      <details className="transcript" open={transcriptOpen||reduced} onToggle={event=>setTranscriptOpen(event.currentTarget.open)}>
-        <summary onClick={player.pause}>{t('Read the steps')}</summary>
-        <ol>{steps.map(step=><li key={step.title}><strong>{step.title}.</strong> {step.copy}</li>)}</ol>
-        <p>{t('If your case is not found when registering, email the program office for help.')}</p>
-      </details>
+      <span className="sr" role="status">{ended?t('Tour finished'):''}</span>
     </div>
+    <details className="transcript" open={transcriptOpen||reduced} onToggle={event=>setTranscriptOpen(event.currentTarget.open)}><summary onClick={player.pause}>{t('Read the steps')}</summary><ol>{steps.map(step=><li key={step.title}><strong>{step.title}.</strong> {step.copy}</li>)}</ol><p>{t('If your case is not found when registering, email the program office for help.')}</p></details>
   </section>;
 }
