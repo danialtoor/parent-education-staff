@@ -34,10 +34,6 @@ const SPANISH = [
 ];
 export const stepsFor=(language:JourneyLanguage)=>STEPS.map((step,i)=>({...step,...(language==='es'?SPANISH[i]:{})}));
 export const stepStart=(index:number)=>STEPS.slice(0,index).reduce((n,s)=>n+s.duration,0);
-export function narrationText(index:number,language:JourneyLanguage){
-  const step=stepsFor(language)[index];
-  return `${step.title}. ${step.copy}`.replaceAll('KiDs1st','Kids First').replaceAll('UpToParents','Up to Parents');
-}
 const ES:Record<string,string>={
   'Your account':'Su cuenta','Then sign in':'Después, inicie sesión','Find your case':'Busque su caso','Email':'Correo electrónico','Case number':'Número de caso','Password':'Contraseña','Last name':'Apellido','You’re signed in':'Sesión iniciada','Create your account':'Cree su cuenta',
   'Watch':'Ver','Reflect':'Reflexionar','Write':'Escribir','Complete the activities at your own pace.':'Complete las actividades a su ritmo.',
@@ -48,11 +44,7 @@ const ES:Record<string,string>={
   'Your scheduled seminar':'Su seminario programado','Learn and reflect together':'Aprender y reflexionar juntos','Seminar attended':'Asistencia completada','Place reserved · attendance still required':'Lugar reservado · aún debe asistir','Program requirements completed':'Requisitos del programa completados',
   'UpToParents activities':'Actividades de UpToParents','Fee paid or judge’s waiver':'Cuota pagada o exención del juez',
   'What to expect':'Qué esperar','Your path through the program':'Su recorrido por el programa','Once you register, we’ll guide you through each step.':'Una vez que se registre, le guiaremos paso a paso.',
-  'Listen to the steps':'Escuchar los pasos','Turn narration off':'Desactivar la narración','Language':'Idioma','Voice settings':'Opciones de voz','Voice':'Voz','Speed':'Velocidad','Normal':'Normal','Slower':'Más lenta','Faster':'Más rápida',
-  'Uses your device’s available voices. Voice quality varies by browser.':'Usa las voces disponibles en su dispositivo. La calidad varía según el navegador.',
-  'Narration is unavailable in this browser. You can still watch or read the steps.':'La narración no está disponible en este navegador. Puede ver o leer los pasos.',
-  'No voice is available for this language on this device. You can still read the steps.':'Este dispositivo no tiene una voz disponible para este idioma. Puede leer los pasos.',
-  'Starting narration…':'Iniciando la narración…','Reading this step':'Leyendo este paso','Narration paused':'Narración en pausa','Narration could not play. Try Listen again, or use the written steps.':'No se pudo reproducir la narración. Intente Escuchar otra vez o lea los pasos.',
+  'Language':'Idioma',
   'Tour finished':'Recorrido terminado','Play':'Reproducir','Pause':'Pausar','Replay':'Repetir','Previous step':'Paso anterior','Next step':'Paso siguiente','Read the steps':'Leer los pasos','of':'de',
   'If your case is not found when registering, email the program office for help.':'Si no encuentra su caso al registrarse, envíe un correo electrónico a la oficina del programa para recibir ayuda.',
 };

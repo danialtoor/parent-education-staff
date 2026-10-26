@@ -5,7 +5,7 @@ import type {CSSProperties, ReactNode} from 'react';
 import {
   CalendarCheck, Check, CornerDownLeft, ExternalLink, Landmark, LockKeyhole,
   LockKeyholeOpen, Mail, MessagesSquare, Monitor, Pause, PencilLine, Play,
-  Pointer, ReceiptText, RotateCcw, Scale, Volume2, VolumeX, ChevronLeft, ChevronRight,
+  Pointer, ReceiptText, RotateCcw, Scale, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 
 import {STEPS, TOTAL, locate, stepsFor, stepStart, translate, type JourneyLanguage} from '@/lib/journey-content';
@@ -110,33 +110,17 @@ function JourneyScene({index, local, reduced, language}:{index:number; local:num
 export function ProgramJourney() {
   const player=useJourneyPlayback();
   const [transcriptOpen,setTranscriptOpen]=useState(false);
-  const {elapsed,playing,narrated,language,reduced,stageRef}=player;
+  const {elapsed,playing,language,reduced,stageRef}=player;
   const {index,local}=locate(elapsed),steps=stepsFor(language);
   const t=(text:string)=>translate(language,text);
-  const unavailable=!player.supported?t('Narration is unavailable in this browser. You can still watch or read the steps.'):!player.voices.length?t('No voice is available for this language on this device. You can still read the steps.'):'';
-  return <section id="program-objects" lang={language} aria-labelledby="program-overview" data-playing={playing} data-narrated={narrated}>
+  return <section id="program-objects" lang={language} aria-labelledby="program-overview" data-playing={playing}>
     <div className="film">
-      <header className="intro"><p className="eyebrow">{t('What to expect')}</p><h2 id="program-overview">{t('Your path through the program')}</h2><p>{t('Once you register, we’ll guide you through each step.')}</p></header>
+      <header className="intro"><div className="intro-topline"><p className="eyebrow">{t('What to expect')}</p><label className="language-choice"><span>{t('Language')}</span><select aria-label="Overview language / Idioma del recorrido" value={language} onChange={e=>player.setLanguage(e.target.value as JourneyLanguage)}><option value="en">English</option><option value="es">Español</option></select></label></div><h2 id="program-overview">{t('Your path through the program')}</h2><p>{t('Once you register, we’ll guide you through each step.')}</p></header>
       <div className="stage" aria-hidden="true" ref={stageRef}><div className="scene active" data-scene={index}><JourneyScene index={index} local={local} reduced={reduced} language={language}/></div></div>
       <div className="caption">
         {steps.map((item,i)=><div className={`caption-panel${i===index?' active':''}`} aria-hidden={i!==index} key={i}>
           <div className="counter">{i+1} {t('of')} {STEPS.length} · {item.label}</div><h3>{item.title}</h3><p>{item.copy}</p>
         </div>)}
-      </div>
-      <div className="narration">
-        <div className="narration-toolbar">
-          <button type="button" className="listen" aria-pressed={narrated} disabled={!!unavailable} onClick={player.toggleNarration}>{narrated?<VolumeX aria-hidden="true"/>:<Volume2 aria-hidden="true"/>}{t(narrated?'Turn narration off':'Listen to the steps')}</button>
-          <label className="language-choice"><span>{t('Language')}</span><select aria-label="Overview language / Idioma del recorrido" value={language} onChange={e=>player.setLanguage(e.target.value as JourneyLanguage)}><option value="en">English</option><option value="es">Español</option></select></label>
-        </div>
-        {unavailable&&<p className="voice-note" role="status">{unavailable}</p>}
-        <details className="voice-settings">
-          <summary>{t('Voice settings')}</summary>
-          <div className="voice-fields">
-            <label><span>{t('Voice')}</span><select disabled={!player.voices.length} value={player.selectedVoice?.voiceURI??''} onChange={e=>player.setVoice(e.target.value)}>{!player.voices.length&&<option value="">—</option>}{player.voices.map(v=><option value={v.voiceURI} key={v.voiceURI}>{v.name} ({v.lang})</option>)}</select></label>
-            <label><span>{t('Speed')}</span><select value={player.rate} onChange={e=>player.setRate(Number(e.target.value))}><option value={.85}>{t('Slower')} (0.85×)</option><option value={1}>{t('Normal')} (1×)</option><option value={1.15}>{t('Faster')} (1.15×)</option></select></label>
-          </div><p className="voice-note">{t('Uses your device’s available voices. Voice quality varies by browser.')}</p>
-        </details>
-        <div className="narration-status" role="status">{player.status&&t(player.status)}</div>
       </div>
       <div className="media" role="group" aria-label={language==='es'?'Controles de reproducción':'Animation playback'}>
         <button className="play" type="button" aria-label={t(playing?'Pause':'Play')} onClick={player.togglePlay}>{playing?<Pause aria-hidden="true"/>:<Play aria-hidden="true"/>}{t(playing?'Pause':'Play')}</button>
@@ -144,6 +128,7 @@ export function ProgramJourney() {
         <button className="replay" type="button" onClick={()=>player.start(true)}><RotateCcw aria-hidden="true"/>{t('Replay')}</button>
       </div>
       <div className="step-navigation"><button type="button" disabled={index===0} onClick={()=>player.seek(stepStart(index-1))}><ChevronLeft aria-hidden="true"/>{t('Previous step')}</button><span aria-hidden="true">{index+1} / {STEPS.length}</span><button type="button" disabled={index===STEPS.length-1} onClick={()=>player.seek(stepStart(index+1))}>{t('Next step')}<ChevronRight aria-hidden="true"/></button></div>
+      <span className="sr" role="status">{elapsed>=TOTAL?t('Tour finished'):''}</span>
       <details className="transcript" open={transcriptOpen||reduced} onToggle={event=>setTranscriptOpen(event.currentTarget.open)}>
         <summary onClick={player.pause}>{t('Read the steps')}</summary>
         <ol>{steps.map(step=><li key={step.title}><strong>{step.title}.</strong> {step.copy}</li>)}</ol>
