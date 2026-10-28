@@ -25,10 +25,13 @@ export default function PublicSite(){
 
 function Landing(){return <>
   <section className="public-introduction"><div className="public-intro-copy"><p className="public-overline">PARENT EDUCATION · KANE COUNTY, ILLINOIS</p><h1 tabIndex={-1}>Helping parents<br/>put children first.</h1><p className="public-lead">A clear place to begin your KiDs1st program—and return to each next step.</p><p>KiDs1st is Kane County Circuit Court’s parent education program for parents and custodians assigned to attend in family cases.</p></div><section className="public-get-started" aria-labelledby="get-started-title"><div className="public-start-heading"><BookOpen size={24} aria-hidden="true"/><h2 id="get-started-title">Start or continue your program</h2></div><div className="public-start-body"><h3>Here for the first time?</h3><p>Have your <strong>case number</strong> and <strong>last name</strong> ready. You’ll find your case before creating an account.</p><a className="btn primary" href="#/register">Register for an account<ArrowRight size={17}/></a><div className="public-returning"><h3>Already registered?</h3><p>Use your email and password to continue.</p><a className="text-link" href="#/sign-in">Sign in to your program <ArrowRight size={16}/></a></div></div></section>
-    <svg className="public-journey-cue" viewBox="0 0 220 120" fill="none" aria-hidden="true" focusable="false">
-      <path d="M24 14 C78 2 179 5 181 37 C184 66 118 71 113 45 C108 18 166 20 159 56 C154 82 111 87 97 109" strokeDasharray="6 8 9 7 5 8"/>
-      <path d="M96 89 Q100 99 97 110 Q108 103 119 101"/>
-    </svg>
+    <div className="public-journey-cue">
+      <span>Learn more!</span>
+      <svg viewBox="0 0 150 110" fill="none" aria-hidden="true" focusable="false">
+        <path d="M7 17 C46 2 109 7 118 35 C127 62 108 83 87 99" strokeDasharray="6 8 9 7 5 8"/>
+        <path d="M89 80 Q91 89 86 100 Q98 98 108 96"/>
+      </svg>
+    </div>
   </section>
   <div className="public-journey-layout">
     <div className="public-program"><ProgramJourney/></div>
