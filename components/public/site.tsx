@@ -6,6 +6,7 @@ import {Btn,PageHeading} from '@/components/staff/ui';
 import {PARENT_SESSION} from '@/lib/parent-auth';
 import {AccountAccess} from './access';
 import {ProgramJourney} from './program-journey';
+import {ProgramJourneyCue} from './program-journey-cue';
 
 const EMAIL='kids1st@co.kane.il.us';
 const SOURCES={home:'https://www.kids1stkanecounty.com/public/Default.aspx',faq:'https://www.kids1stkanecounty.com/public/FAQ.aspx',contact:'https://www.kids1stkanecounty.com/public/Contact.aspx',register:'https://www.kids1stkanecounty.com/public/Register.aspx'};
@@ -25,15 +26,7 @@ export default function PublicSite(){
 
 function Landing(){return <>
   <section className="public-introduction"><div className="public-intro-copy"><p className="public-overline">PARENT EDUCATION · KANE COUNTY, ILLINOIS</p><h1 tabIndex={-1}>Helping parents<br/>put children first.</h1><p className="public-lead">A clear place to begin your KiDs1st program—and return to each next step.</p><p>KiDs1st is Kane County Circuit Court’s parent education program for parents and custodians assigned to attend in family cases.</p></div><section className="public-get-started" aria-labelledby="get-started-title"><div className="public-start-heading"><BookOpen size={24} aria-hidden="true"/><h2 id="get-started-title">Start or continue your program</h2></div><div className="public-start-body"><h3>Here for the first time?</h3><p>Have your <strong>case number</strong> and <strong>last name</strong> ready. You’ll find your case before creating an account.</p><a className="btn primary" href="#/register">Register for an account<ArrowRight size={17}/></a><div className="public-returning"><h3>Already registered?</h3><p>Use your email and password to continue.</p><a className="text-link" href="#/sign-in">Sign in to your program <ArrowRight size={16}/></a></div></div></section>
-    <div className="public-journey-cue">
-      <span className="public-journey-note">Learn more!
-        <svg viewBox="0 0 76 12" fill="none" aria-hidden="true" focusable="false"><path d="M4 6 C23 10 43 2 71 5"/></svg>
-      </span>
-      <svg className="public-journey-squiggle" viewBox="0 0 220 140" fill="none" aria-hidden="true" focusable="false">
-        <path d="M7 27 C58 7 172 1 192 39 C212 78 137 96 108 69 C82 45 108 19 138 38 C169 59 150 91 117 109 C102 117 91 123 85 133" strokeDasharray="7 8 5 8 9 7"/>
-        <path d="M86 113 Q90 124 84 134 Q98 128 112 126"/>
-      </svg>
-    </div>
+    <ProgramJourneyCue/>
   </section>
   <div className="public-journey-layout">
     <div className="public-program"><ProgramJourney/></div>
