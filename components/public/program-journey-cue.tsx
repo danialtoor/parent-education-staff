@@ -44,15 +44,15 @@ export function ProgramJourneyCue(){
   const angle=Math.atan2(aim.y,aim.x)*180/Math.PI-90;
   return <div className="public-journey-cue">
     <span className="public-journey-note">Learn more!
-      <svg viewBox="0 0 84 16" fill="none" aria-hidden="true" focusable="false">
+      <svg viewBox="0 0 92 16" fill="none" aria-hidden="true" focusable="false">
         <defs><filter id="journey-crayon-grain" x="-10%" y="-40%" width="120%" height="180%" colorInterpolationFilters="sRGB">
           <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" seed="9" result="grain"/>
           <feColorMatrix in="grain" type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 4 0 0 0 -1.25" result="wax"/>
           <feComposite in="SourceGraphic" in2="wax" operator="in"/>
         </filter></defs>
         <g filter="url(#journey-crayon-grain)">
-          <path d="M5 8 C21 12 43 3 78 6" strokeWidth="5.8"/>
-          <path d="M8 10 C26 12 49 5 76 8" strokeWidth="2.8" opacity=".7"/>
+          <path d="M13 8 C29 11 52 3 85 6" strokeWidth="5.8"/>
+          <path d="M26 10 C42 10 62 5 85 8" strokeWidth="2.8" opacity=".7"/>
         </g>
       </svg>
     </span>

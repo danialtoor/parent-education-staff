@@ -12,7 +12,7 @@
 .public-intro-copy>p.public-lead{font-size:20px;line-height:1.65;color:#344f63;margin-bottom:17px;max-width:500px}
 .public-journey-cue{grid-area:cue;align-self:start;display:grid;grid-template-columns:max-content minmax(0,220px);align-items:start;gap:8px;width:100%;max-width:385px;margin-top:6px;color:#466b80;pointer-events:none}
 .public-journey-note{position:relative;display:inline-block;font:27px/1.4 "Chalkboard SE","Segoe Print","Comic Sans MS",cursive;white-space:nowrap;transform:rotate(-5deg);transform-origin:left center}
-.public-journey-note>svg{position:absolute;right:0;bottom:-7px;width:84px;height:16px;stroke:#c53d34;stroke-linecap:round}
+.public-journey-note>svg{position:absolute;right:-8px;bottom:-7px;width:92px;height:16px;stroke:#c53d34;stroke-linecap:round}
 .public-journey-squiggle{display:block;width:100%;height:auto;stroke:currentColor;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
 .public-get-started{grid-area:access;background:#fff;border:1px solid #bfccd6;border-top:4px solid #355a76;border-radius:2px}
 .public-start-heading{padding:24px 27px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #dbe2e7}.public-start-heading>svg{color:#4b6980}
